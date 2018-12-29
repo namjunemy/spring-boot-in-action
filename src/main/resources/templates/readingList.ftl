@@ -6,9 +6,12 @@
 </head>
 
 <body>
+<form action="/logout" method="POST">
+    <input type="submit" value="Logout"/>
+</form>
 <h2>Your Reading List</h2>
-    <#if books?size != 0>
-      <#list books as book>
+<#if books?size != 0>
+    <#list books as book>
         <dl>
             <dt class="bookHeadline">
                 <span>${book.title}</span> by
@@ -16,17 +19,17 @@
                 (ISBN: <span>${book.isbn}</span>)
             </dt>
             <dd class="bookDescription">
-              <#if book.description?length == 0>
-                  <span>No description available</span>
-              <#else>
-                  <span>${book.description}</span>
-              </#if>
+                <#if book.description?length == 0>
+                    <span>No description available</span>
+                <#else>
+                    <span>${book.description}</span>
+                </#if>
             </dd>
         </dl>
-      </#list>
-    <#else>
-        <p>You have no books in your book list.</p>
-    </#if>
+    </#list>
+<#else>
+    <p>You have no books in your book list.</p>
+</#if>
 
 <hr/>
 
