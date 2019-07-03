@@ -1,29 +1,31 @@
 package io.namjune.readinglist.controller;
 
+import io.namjune.readinglist.annotation.CurrentUser;
+import io.namjune.readinglist.controller.dto.BookRequestDTO;
 import io.namjune.readinglist.domain.Book;
 import io.namjune.readinglist.domain.Reader;
+import io.namjune.readinglist.repository.ReaderRepository;
 import io.namjune.readinglist.repository.ReadingListRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-
-import java.util.List;
 
 @Controller
+@RequiredArgsConstructor
 @RequestMapping("/")
 public class ReadingListController {
 
     private final ReadingListRepository readingListRepository;
+    private final ReaderRepository readerRepository;
+    private final ModelMapper modelMapper;
 
-    @Autowired
-    public ReadingListController(ReadingListRepository readingListRepository) {
-        this.readingListRepository = readingListRepository;
-    }
-
-    @RequestMapping(method = RequestMethod.GET)
-    public String readersBooks(Reader reader, Model model) {
+    @GetMapping
+    public String readersBooks(@CurrentUser Reader reader, Model model) {
         List<Book> readingList = readingListRepository.findByReader(reader);
         if (readingList != null) {
             model.addAttribute("books", readingList);
@@ -32,10 +34,13 @@ public class ReadingListController {
         return "readingList";
     }
 
-    @RequestMapping(method = RequestMethod.POST)
-    public String addToReadingList(Reader reader, Book book) {
+    @PostMapping
+    public String addToReadingList(@CurrentUser Reader reader, BookRequestDTO bookDTO) {
+        Book book = this.modelMapper.map(bookDTO, Book.class);
         book.setReader(reader);
         readingListRepository.save(book);
+        reader.addBook(book);
+        readerRepository.save(reader);
         return "redirect:/";
     }
 }

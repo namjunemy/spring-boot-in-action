@@ -1,37 +1,35 @@
 package io.namjune.readinglist.config;
 
-import io.namjune.readinglist.repository.ReaderRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.Arrays;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.header.writers.frameoptions.WhiteListedAllowFromStrategy;
+import org.springframework.security.web.header.writers.frameoptions.XFrameOptionsHeaderWriter;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-
-    @Autowired
-    private ReaderRepository readerRepository;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
             .authorizeRequests()
-            .antMatchers("/").access("hasRole('READER')")
-            .antMatchers("/**").permitAll()
-
+            .antMatchers("/").authenticated()
+            .antMatchers("/h2-console/**").permitAll()
+            .anyRequest().permitAll()
             .and()
-
+            .csrf()
+            .ignoringAntMatchers("/h2-console/**")
+            .and()
+            .headers()
+            .frameOptions().sameOrigin()//h2 console 사용 관련 허용
+            .and()
             .formLogin()
-            .loginPage("/login")
-            .failureUrl("/login?error=true");
-    }
-
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.inMemoryAuthentication()
-            .withUser("namjunemy").password("1234").roles("READER");
+            .and()
+            .httpBasic();
     }
 }
